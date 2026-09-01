@@ -1,0 +1,76 @@
+{% extends "auctions/layout.html" %}
+{% load humanize %}
+
+{% block body %}
+<div class="container py-3">
+    <h2>Sản phẩm đã đăng bán của tôi</h2>
+    <hr>
+
+    <h3 class="text-primary mt-4">🔥 Sản phẩm đang đấu giá ({{ active_listings|length }})</h3>
+    {% if active_listings %}
+        {% for auction in active_listings %}
+        <div class="row mb-3 border light p-3 align-items-center">
+            <div class="col-md-3">
+                <a href="{% url 'listing' auction.id %}">
+                    <img src="{{ auction.image_url }}" alt="{{ auction.title }}" style="max-width: 100%; max-height: 150px; border-radius: 4px; cursor: pointer;">
+                </a>
+            </div>
+            <div class="col-md-9">
+                <h4><a href="{% url 'listing' auction.id %}" style="color: #007bff; text-decoration: none;"><strong>{{ auction.title }}</strong></a></h4>
+                <p class="text-muted mb-1">Danh mục: {{ auction.category.name }}</p>
+                <p class="mb-1"><strong>Giá khởi điểm:</strong> {{ auction.start_price|floatformat:0|intcomma }} VNĐ</p>
+                <p class="mb-1 text-danger" style="font-size: 18px;"><strong>Giá hiện tại:</strong> {{ auction.current_price|floatformat:0|intcomma }} VNĐ</p>
+                <span class="badge badge-primary" style="background-color: #007bff; color: white; padding: 5px 10px;">Đang hoạt động</span>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted font-italic">Không có sản phẩm nào đang đấu giá.</p>
+    {% endif %}
+
+    <h3 class="text-success mt-5">🤝 Sản phẩm đã bán thành công ({{ closed_listings|length }})</h3>
+    {% if closed_listings %}
+        {% for auction in closed_listings %}
+        <div class="row mb-3 border light p-3 align-items-center" style="background-color: #f8f9fa;">
+            <div class="col-md-3">
+                <a href="{% url 'listing' auction.id %}">
+                    <img src="{{ auction.image_url }}" alt="{{ auction.title }}" style="max-width: 100%; max-height: 150px; border-radius: 4px; filter: grayscale(30%); cursor: pointer;">
+                </a>
+            </div>
+            <div class="col-md-9">
+                <h4><a href="{% url 'listing' auction.id %}" style="color: #212529; text-decoration: none;"><strong>{{ auction.title }}</strong></a></h4>
+                <p class="mb-1" style="color: #212529;"><strong>Giá chốt phiên:</strong> {{ auction.current_price|floatformat:0|intcomma }} VNĐ</p>
+                <p class="mb-1 text-success"><strong>Người mua thắng giải:</strong> {{ auction.winner_user.username }}</p>
+                <span class="badge badge-success" style="background-color: #28a745; color: white; padding: 5px 10px;">Đã hoàn thành</span>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted font-italic">Chưa có sản phẩm nào được bán thành công.</p>
+    {% endif %}
+
+    <h3 class="text-danger mt-5">⚠️ Sản phẩm bị từ chối nhận ({{ refused_listings|length }})</h3>
+    {% if refused_listings %}
+        {% for auction in refused_listings %}
+        <div class="row mb-3 border light p-3 align-items-center" style="border-left: 5px solid #dc3545 !important;">
+            <div class="col-md-3">
+                <a href="{% url 'listing' auction.id %}">
+                    <img src="{{ auction.image_url }}" alt="{{ auction.title }}" style="max-width: 100%; max-height: 150px; border-radius: 4px; cursor: pointer;">
+                </a>
+            </div>
+            <div class="col-md-9">
+                <h4><a href="{% url 'listing' auction.id %}" style="color: #dc3545; text-decoration: none;"><strong>{{ auction.title }}</strong></a></h4>
+                <p class="mb-1"><strong>Giá chốt phiên hụt:</strong> {{ auction.current_price|floatformat:0|intcomma }} VNĐ</p>
+                <p class="mb-1"><strong>Người từ chối:</strong> {{ auction.winner_user.username }}</p>
+                <p class="p-2 bg-light text-dark rounded border" style="font-size: 14px;">
+                    ❌ <strong>Lý do hủy đơn từ khách:</strong> <span class="text-danger">{{ auction.refusal_reason }}</span>
+                </p>
+                <span class="badge badge-warning" style="background-color: #ffc107; color: #212529; padding: 5px 10px; font-weight: bold;">Đơn bị hủy</span>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted font-italic">Không có đơn hàng nào bị hủy bỏ.</p>
+    {% endif %}
+</div>
+{% endblock %}

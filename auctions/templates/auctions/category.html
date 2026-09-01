@@ -1,0 +1,55 @@
+{% extends "auctions/layout.html" %}
+{% load humanize %}
+
+{% block body %}
+    <div class="container py-3">
+        <h2 class="text-center my-4">Sản phẩm đang hoạt động - {{ category.name }}</h2>
+        
+        {% if auctions %}
+            {% for auction in auctions %}
+            <div class="row mb-3"> 
+                <div class="col py-3 border light">
+                    <a href="{% url 'listing' auction.id %}">
+                        <img src="{{ auction.image_url }}" alt="{{ auction.title }}" style="max-width: 200px; max-height: 200px;"> 
+                    </a>
+                </div>
+                
+                <div class="col py-3 border light">
+                    <h4><a href="{% url 'listing' auction.id %}" style="color: inherit;"><strong>{{ auction.title }}</strong></a></h4>
+                    <div>Mô tả:</div>
+                    <div><p>{{ auction.desc }}</p></div>
+                    
+                    <div>Danh mục:</div>
+                    <div><p>{{ auction.category.name }}</p></div>
+                    
+                    <div><strong>Giá hiện tại:</strong></div>
+                    <div><strong style="font-size: 25px"><p>{{ auction.current_price|floatformat:0|intcomma }} VNĐ</p></strong></div>
+                    
+                    <div>Ngày tạo:</div>
+                    <div><p>{{ auction.created_at }}</p></div>
+
+                    {% if user.is_authenticated %}
+                    <div class="mt-2">
+                        {% if auction.id in watching_ids %}
+                        <form action="{% url 'removeWatchlist' auction.id %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary btn-sm">Xóa khỏi theo dõi</button>
+                        </form>
+                        {% else %}
+                        <form action="{% url 'addWatchlist' auction.id %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary btn-sm">Thêm vào theo dõi</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-secondary text-center" role="alert">
+                Không có sản phẩm nào hoạt động trong danh mục này.
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

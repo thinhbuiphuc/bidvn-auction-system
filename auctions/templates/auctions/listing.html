@@ -1,0 +1,283 @@
+{% extends "auctions/layout.html" %}
+{% load humanize %}
+{% block title %}
+Đấu giá {{ auction.title }} — BidVN
+{% endblock %}
+{% block body %}
+<div class="container">
+    {% if messages %}
+        {% for message in messages %}
+            {% if "closed successfully" in message.message or "charged" in message.message %}
+                <div class="alert alert-success" style="background-color: #1b4332; color: #d8f3dc; border-color: #1b4332;">
+                    {{ message }}
+                </div>
+            {% elif "winner of the bid" in message.message %}
+                <div class="alert alert-info" style="background-color: #0b2545; color: #8da9c4; border-color: #0b2545;">
+                    {{ message }}
+                </div>
+            {% else %}
+                <div class="alert alert-secondary">
+                    {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        {% if auction.status == 'Closed' %}
+            {% if highest_bidder %}
+                <div class="alert alert-info" style="background-color: #0b2545; color: #8da9c4; border-color: #0b2545; margin-bottom: 15px;">
+                    The winner of the bid is {{ highest_bidder.username }}
+                </div>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col py-3">
+            <img src="{{ auction.image_url }}" alt="{{ auction.title }}" style="width: 22vw; min-width: 320px; max-width: 400px; height:auto;">
+        </div>
+        <div class="col my-3 center-block">
+            {% if user.is_authenticated %}
+                {% if watching %}
+                <h5><span class="badge badge-dark">Đang theo dõi</span></h5>
+                {% endif %}
+            {% endif %}
+            <h3>{{ auction.title }}</h3>
+            <div class="row mb-3">
+                <div class="col-md-2">
+                    <div>Trạng thái:</div>
+                    <div>
+                        <strong>
+                            {% if auction.status == 'Completed' %}
+                            Đã hoàn tất
+                            {% elif auction.status == 'Closed' %}
+                            Đã đóng
+                            {% else %}
+                            Đang hoạt động
+                            {% endif %}
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-auto">
+                    {% if user.is_authenticated and auction.status != 'Closed' and user == auction.seller %}
+                    <form action="{% url 'close' auction.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-group py-3">
+                            <button type="submit" class="btn btn-primary btn-sm" style="width: 150px">Dừng đấu giá</button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            <div>Mô tả:</div>
+            <div><p>{{ auction.desc }}</p></div>
+            <div>Giá hiện tại:</div>
+            <div><p><strong style="font-size: 30px">{{ auction.current_price|floatformat:0|intcomma }} VND</strong></p></div>
+            <div>Giá khởi điểm:</div>
+            <div><p>{{ auction.start_price|floatformat:0|intcomma }} VNĐ</p></div>
+            <div>Người bán:</div>
+            <div><p>{{ auction.seller.username }}</p></div>
+            <div>Ngày tạo:</div>
+            <div><p><small>{{ auction.created_at }}</small></p></div>
+            <div><p><small>{{ auction.updated_at }}</small></p></div>
+            <div>Ngày kết thúc:</div>
+            <div><p><small>{{ auction.end_time }}</small></p></div>
+            <span class="form-text text-muted">Hiện có {{ bidNum }} lượt trả giá.</span>
+
+            {% if auction.status == 'Active' %}
+            <div class="container mt-3" id="button_group">
+                <div class="row">
+                    <div class="col-12 col-md-4 mb-3">
+                        <form action="{% url 'bid' auction.id %}" method="post" onsubmit="this.amount.value = this.amount.value.replace(/\./g, '')">
+                            {% csrf_token %}
+                            {% for field in form %}
+                            <div class="form-group">
+                                <label><strong>{{ field.label }}:</strong></label>
+                                <div>{{ field }}</div>
+                                <small><span class="form-text text-muted">Vui lòng nhập giá cao hơn mức giá hiện tại.</span></small>
+                            </div>
+                            {% endfor %}
+                            <button type="submit" id="bid_button" class="btn btn-primary w-100">Đặt giá</button>
+                        </form>
+                    </div>
+                    
+                    <div class="col-12 col-md-4 mb-3 d-flex align-items-end">
+                        {% if auction.buy_now_price > 0 and request.user != auction.seller %}
+                        <form action="{% url 'buy_now' auction.id %}" method="post" class="w-100">
+                            {% csrf_token %}
+                            <button type="submit" id="buy_now_button" class="btn btn-success w-100">Mua ngay: {{ auction.buy_now_price|floatformat:0|intcomma }} VNĐ</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-12 col-md-4 mb-3 d-flex align-items-end">
+                        {% if user.is_authenticated %}
+                        <div class="w-100">
+                            {% if not watching %}
+                            <form action="{% url 'addWatchlist' auction.id %}" method="post" class="w-100">
+                                {% csrf_token %}
+                                <button type="submit" id="watchlist_button" class="btn btn-outline-primary w-100">Thêm vào theo dõi</button>
+                            </form>
+                            {% else %}
+                            <form action="{% url 'removeWatchlist' auction.id %}" method="post" class="w-100">
+                                {% csrf_token %}
+                                <button type="submit" id="watchlist_button2" class="btn btn-outline-primary w-100">Xóa khỏi theo dõi</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+                {% if highest_bidder %}
+                    {% if user.is_authenticated and user == highest_bidder %}
+                    <p class="text-success" style="font-size: 20px"><strong>Xin chúc mừng! Bạn đã thắng phiên đấu giá này.</strong></p>
+                    <div class="alert alert-warning" style="background-color: #4a3b00; color: #ffe08a; border-color: #4a3b00;">
+                        📞 Liên hệ người bán để nhận hàng: <strong>{{ auction.contact_info }}</strong>
+                    </div>
+                    {% else %}
+                    <p>Người chiến thắng: <strong>{{ highest_bidder.username }}</strong>.</p>
+                    {% endif %}
+                {% else %}
+                <p>Phiên đấu giá kết thúc và không có người mua.</p>
+                {% endif %}
+
+                {% if user.is_authenticated and user == auction.seller %}
+                <div class="card mt-4 border-secondary" style="max-width: 450px; background-color: #f8f9fa;">
+                    <div class="card-header bg-secondary text-white font-weight-bold">
+                        HÓA ĐƠN CHI PHÍ NỀN TẢNG (BILL)
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm table-borderless mb-0">
+                            <tbody>
+                                <tr>
+                                    <td>Phí đăng tin gốc:</td>
+                                    <td class="text-right"><strong>{{ auction.calculate_fixed_costs|default:0|floatformat:0|intcomma }} VNĐ</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Phí giao dịch thành công:</td>
+                                    <td class="text-right"><strong>{{ auction.calculate_success_fee|default:0|floatformat:0|intcomma }} VNĐ</strong></td>
+                                </tr>
+                                <tr class="border-top">
+                                    <td class="text-success font-weight-bold">Tổng phí khấu trừ:</td>
+                                    <td class="text-right text-success font-weight-bold">
+                                        {{ auction.listing_fee|floatformat:0|intcomma }} VNĐ
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+                
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<hr id="listing_divider">
+
+{% if auction.status == 'Closed' or auction.status == 'Completed' %}
+    {% if request.user == auction.seller or request.user == auction.winner_user %}
+        <div class="card mt-4 p-3 mb-4">
+            <h3 class="mb-3">Đánh giá phiên giao dịch</h3>
+            <form action="{% url 'leave_review' auction.id %}" method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="d-block mb-2">Số sao đánh giá:</label>
+                    <select name="rating" class="form-control" style="width: 170px;">
+                        <option value="5">5 Sao ⭐⭐⭐⭐⭐</option>
+                        <option value="4">4 Sao ⭐⭐⭐⭐</option>
+                        <option value="3">3 Sao ⭐⭐⭐</option>
+                        <option value="2">2 Sao ⭐⭐</option>
+                        <option value="1">1 Sao ⭐</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="d-block mb-2">Nội dung nhận xét:</label>
+                    <textarea name="comment" class="form-control" rows="3" placeholder="Nhập nhận xét của bạn về đối tác giao dịch..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Gửi đánh giá hai chiều</button>
+            </form>
+        </div>
+    {% endif %}
+{% endif %}
+
+<div class="mt-4 mb-4">
+    <h3 class="mb-3">Lịch sử đánh giá phiên này</h3>
+
+    {% if reviews %}
+        <div class="d-flex flex-column" style="gap: 15px;">
+            {% for r in reviews %}
+                <div class="card p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong>@{{ r.reviewer.username }}</strong>
+                        <small class="text-muted">{{ r.created_at|date:"H:i d/m/Y" }}</small>
+                    </div>
+
+                    <div class="mb-1" style="color: #f5a623;">
+                        {% if r.rating == 5 %}⭐⭐⭐⭐⭐
+                        {% elif r.rating == 4 %}⭐⭐⭐⭐
+                        {% elif r.rating == 3 %}⭐⭐⭐
+                        {% elif r.rating == 2 %}⭐⭐
+                        {% else %}⭐{% endif %}
+                    </div>
+
+                    <div>
+                        <strong>Nhận xét:</strong> {{ r.comment|default:"Không có lời nhắn." }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted font-italic">Phiên đấu giá này chưa có đánh giá nào.</p>
+    {% endif %}
+</div>
+</div>
+
+{% if user.is_authenticated %}
+<div class="container my-5" id="comment_block">
+    <h4>Để lại bình luận của bạn</h4>
+    <form action="{% url 'comment' auction.id %}" method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col">
+                <div><label>Tiêu đề:</label></div>
+                <div>{{ commentForm.headline }}</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div><label>Nội dung:</label></div>
+                <div>{{ commentForm.content }}</div>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col">
+                <button type="submit" id="comment_button" class="btn btn-primary" style="width: 120px">Gửi bài</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endif %}
+
+<div class="container" id="comment_display">
+    <h4>Bình luận về sản phẩm</h4>
+    {% if comments %}
+        {% for comment in comments %}
+        <div class="card bg-light mb-3">
+            <div class="card-header">
+                <strong>{{ comment.user.username }}</strong>
+                <div class="text-muted small">đã bình luận vào lúc {{ comment.timestamp }}</div>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ comment.headline }}</h5>
+                <p class="card-text">{{ comment.content }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>Chưa có bình luận nào.</p>
+    {% endif %}
+</div>
+{% endblock %}

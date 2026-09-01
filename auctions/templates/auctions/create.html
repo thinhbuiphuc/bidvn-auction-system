@@ -1,0 +1,83 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<div class="container py-4" style="max-width: 750px;">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show mb-4" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card p-4">
+        <h2 class="text-center mb-4" style="color: var(--brand); font-weight: bold;">✨ Tạo Phiên Đấu Giá Mới</h2>
+        <hr>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-group mb-3">
+                <label for="id_title"><strong>{{ form.title.label }}:</strong></label>
+                {{ form.title }}
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="id_category"><strong>{{ form.category.label }}:</strong></label>
+                {{ form.category }}
+                <small class="text-muted d-block mt-1">💡 Hệ thống tự động phân phối phí dịch vụ thay đổi tùy thuộc theo nhóm danh mục sản phẩm.</small>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                    <label for="id_start_price"><strong>{{ form.start_price.label }} (VNĐ):</strong></label>
+                    {{ form.start_price }}
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                    <label for="id_duration"><strong>{{ form.duration.label }}:</strong></label>
+                    {{ form.duration }}
+                </div>
+            </div>
+
+            <div class="p-3 my-3 rounded border bg-light">
+                <p class="mb-2" style="font-weight: bold; font-size: 1.05rem; color: var(--brand-dark);">🛠️ Tùy chọn cấu hình nâng cao (Có phụ thu phí nền tảng):</p>
+
+                <div class="row">
+                    <div class="col-md-6 form-group mb-2">
+                        <label for="id_reserve_price" class="text-muted" style="font-size: 14px;">{{ form.reserve_price.label }}:</label>
+                        {{ form.reserve_price }}
+                    </div>
+                    <div class="col-md-6 form-group mb-2">
+                        <label for="id_buy_now_price" class="text-muted" style="font-size: 14px;">{{ form.buy_now_price.label }}:</label>
+                        {{ form.buy_now_price }}
+                    </div>
+                </div>
+                <small class="text-muted d-block mt-1">⚠️ Mỗi tùy chọn nâng cao được kích hoạt sẽ cộng thêm 200 VNĐ vào phí đăng tin cố định.</small>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="id_desc"><strong>{{ form.desc.label }}:</strong></label>
+                {{ form.desc }}
+            </div>
+
+            <div class="form-group mb-4">
+                <label for="id_image_url"><strong>{{ form.image_url.label }} (URL):</strong></label>
+                {{ form.image_url }}
+            </div>
+
+            <div class="form-group mb-4">
+                <label for="id_contact_info"><strong>{{ form.contact_info.label }}:</strong></label>
+                {{ form.contact_info }}
+                <small class="text-muted d-block mt-1">💡 Chỉ hiển thị cho người thắng cuộc sau khi phiên đấu giá kết thúc, dùng để liên hệ giao nhận hàng.</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="font-weight: bold; font-size: 1.1rem; padding: 12px;">
+                Phát Hành Phiên Đấu Giá
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

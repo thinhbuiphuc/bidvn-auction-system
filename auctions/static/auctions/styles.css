@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --brand: #ff6b35;
+    --brand-dark: #e5501c;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --card-bg: #ffffff;
+    --page-bg: #f4f5f7;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--page-bg);
+    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--ink);
+}
+
+h1, h2, h3, h4, h5 {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 700;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* Thanh điều hướng đổi màu thương hiệu thay vì đen mặc định của Bootstrap */
+.navbar.bg-dark {
+    background-color: var(--ink) !important;
+}
+
+.navbar .nav-link {
+    font-weight: 500;
+}
+
+.navbar .nav-link:hover {
+    color: var(--brand) !important;
+}
+
+.btn-primary {
+    background-color: var(--brand);
+    border-color: var(--brand);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--brand-dark);
+    border-color: var(--brand-dark);
+}
+
+.btn-outline-primary {
+    color: var(--brand);
+    border-color: var(--brand);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--brand);
+    border-color: var(--brand);
+}
+
+.row {
+    margin-top: 20px;
+}
+
+/* Đồng bộ mọi .card (form tạo tin, hoá đơn, đánh giá...) theo cùng 1 tông sáng,
+   thay vì mỗi trang tự chế màu nền riêng (có chỗ đen, có chỗ trắng, nhìn rời rạc) */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Card sản phẩm: bo góc + đổ bóng nhẹ + hiệu ứng hover, thay vì 2 khung viền vuông rời nhau
+   (ảnh và thông tin nằm trong 2 thẻ .col.border riêng, nên card thật sự là cả .row.mb-3 bọc ngoài) */
+.row.mb-3 {
+    background-color: var(--card-bg);
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+    overflow: hidden;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.row.mb-3:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.row.mb-3 > .col.border {
+    border: none !important;
+}
+
+/* Ảnh sản phẩm: object-fit để không bị méo khi ảnh không vuông */
+.col img {
+    width: 28vw;
+    min-width: 330px;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#watchlist_button {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+
+#watchlist_button2 {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+
+#button_group {
+    padding-left: 0;
+    max-width: 1920px;
+}
+
+#comment_block {
+    width: 90%;
+}
+
+#comment_display {
+    width: 90%;
+}
+
+#listing_divider {
+    max-width: 1150px;
+}

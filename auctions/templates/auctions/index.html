@@ -1,0 +1,70 @@
+{% extends "auctions/layout.html" %}
+{% load humanize %}
+
+{% block body %}
+      
+    <div class="container py-3">
+        <h2>Sản phẩm đang đấu giá</h2>
+        {% for auction in auctions %}
+        <div class="row mb-3"> 
+            <div class="col py-3 border light">
+                <a href="{% url 'listing' auction.id %}">
+                    <img src="{{ auction.image_url }}" alt="{{ auction.title }}" style="max-width: 200px; max-height: 200px;"> 
+                </a>
+            </div>
+            
+            <div class="col py-3 border light">
+                <h4><a href="{% url 'listing' auction.id %}" style="color: inherit;"><strong>{{ auction.title }}</strong></a></h4>
+                
+                <div class="mb-2">
+                    {% if auction.status == "Closed" %}
+                        {% if auction.winner == user %}
+                            <span class="badge badge-success" style="background-color: #28a745; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold;">
+                                🏆 Bạn đã thắng!
+                            </span>
+                        {% else %}
+                            <span class="badge badge-secondary" style="background-color: #6c757d; color: white; padding: 5px 10px; border-radius: 4px;">
+                                Đã đóng
+                            </span>
+                        {% endif %}
+                    {% else %}
+                        <span class="badge badge-primary" style="background-color: #007bff; color: white; padding: 5px 10px; border-radius: 4px;">
+                            Đang hoạt động
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div>Mô tả:</div>
+                <div><p>{{ auction.desc }}</p></div>
+                
+                <div>Danh mục:</div>
+                <div><p>{{ auction.category.name }}</p></div>
+                
+                <div><strong style="font-size: 25px">Giá hiện tại:</strong></div>
+                <div><strong style="font-size: 25px"><p>{{ auction.current_price|floatformat:0|intcomma }} VNĐ</p></strong></div>
+                
+                <div>Ngày tạo:</div>
+                <div><p>{{ auction.created_at }}</p></div>
+
+                {% if user.is_authenticated %}
+                <div class="mt-2">
+                    {% if auction.id in watching_ids %}
+                    <form action="{% url 'removeWatchlist' auction.id %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Xóa khỏi theo dõi</button>
+                    </form>
+                    {% else %}
+                    <form action="{% url 'addWatchlist' auction.id %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Thêm vào theo dõi</button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+            
+        {% endfor %}
+    </div>
+
+{% endblock %}
